@@ -42,7 +42,6 @@ cirkel_lijst = []
 def Speelveld_tekenen(x):
     global plaatje_size
     lijn_pos = plaatje_size / x
-    print(lijn_pos)
     for i in range(1,x):
         draw.line(((lijn_pos*i,0),(lijn_pos*i,plaatje_size)),fill="black")
         draw.line(((0,lijn_pos*i),(plaatje_size,lijn_pos*i)),fill="black")
@@ -58,37 +57,51 @@ def Speelveld_tekenen(x):
     afbeelding.configure(image=foto)
 
 
+
 def teken_stuk(x,y,speler):
+    global beurt_speler
     
     x -= x % (plaatje_size / speelveld_grootte)
     y -= y % (plaatje_size / speelveld_grootte) 
-    x += offset/2
-    y += offset/2
+    x += offset//2
+    y += offset//2
     
+    grid_x = x / (plaatje_size / speelveld_grootte) + 0.95
+    grid_y = y / (plaatje_size / speelveld_grootte) + 0.95
+    
+    
+    for i in cirkel_lijst:
+        if i.x == grid_x and i.y == grid_y:
+            print("niet mogelijk om hier te plaatsen")
+            return
+            
+    
+    
+    cirkel_lijst.append(cirkel_info(grid_x,grid_y,1))
     if speler == 1:
       draw.ellipse(((x,y),(x+straal,y+straal)),fill="red")
     elif speler == 2:
       draw.ellipse(((x,y),(x+straal,y+straal)),fill="blue")
       
-    grid_x = x / (plaatje_size / speelveld_grootte) + 1
-    grid_y = y / (plaatje_size / speelveld_grootte) + 1
-    cirkel_lijst.append(cirkel_info(grid_x,grid_y,1))
+    if beurt_speler == 1:
+      beurt_speler = 2
+    elif beurt_speler == 2:
+        beurt_speler = 1
     
     global foto
     foto = PhotoImage(plaatje)
     afbeelding.configure(image=foto)
     
-def muisKlik(ea):
-    global beurt_speler
- 
-      
-    teken_stuk(ea.x,ea.y,beurt_speler)
-    
-    if beurt_speler == 1:
-      beurt_speler = 2
-    elif beurt_speler == 2:
-        beurt_speler = 1
 
+    
+    
+    
+def muisKlik(ea):
+    global beurt_speler 
+    teken_stuk(ea.x,ea.y,beurt_speler)
+       
+    
+    print(cirkel_lijst)
         # add this code block below the existing code
 
 
