@@ -1,5 +1,5 @@
 from tkinter       import Frame, Label
-import tkinter as tk
+import tkinter     as tk
 from PIL.ImageDraw import Draw
 from PIL.ImageTk   import PhotoImage
 from PIL           import Image, ImageTk
@@ -22,7 +22,9 @@ scherm.pack()
 default = tk.StringVar(scherm)
 default.set("6x6")
 
+cirkel_lijst = []
 
+lijst1 = [(0)for i in range(0, speelveld_grootte**2)]
 
 def lees_dropdown(heu):
     global speelveld_grootte
@@ -32,6 +34,7 @@ def lees_dropdown(heu):
     
     draw.rectangle((0, 0, plaatje_size, plaatje_size), fill="white")
     Speelveld_tekenen(speelveld_grootte)
+
 
 opties = ["6x6", "8x8", "10x10", "20x20", "30x30"]
 drop = tk.OptionMenu(scherm, default,*opties, command=lees_dropdown)
@@ -56,7 +59,19 @@ class cirkel_info:
     def __repr__(self):
         return str(self)
 
-cirkel_lijst = []
+
+# returned de index van de lijst corensponderend met de x en y coordinaten
+def locatie_omzetten(x,y):
+    
+    if x > speelveld_grootte or x<0 or y<0 or y > speelveld_grootte:
+        return
+    return ((speelveld_grootte*(y-1))+x-1)
+# returned de x en y coordinaten van de lijst corensponderend met de index
+def coordinaten(i):
+    return (i%speelveld_grootte+1, i//speelveld_grootte+1)
+# zorgt dat de zet in lijst1 wordt geplaatst
+def plaatsen(x, y, speler):
+    lijst1[locatie_omzetten(x,y)] = speler
 
 
 def Speelveld_tekenen(x):
@@ -75,7 +90,28 @@ def Speelveld_tekenen(x):
     teken_stuk(center-plaatje_size/x, center, 2)
     teken_stuk(center, center-plaatje_size/x, 2)
     teken_stuk(center-plaatje_size/x, center-plaatje_size/x, 1)
-    
+
+lege_plaatsen = []
+def hokjes(i, speler):
+    x,y = coordinaten(i)
+    print("speler", speler)
+    andere_speler = (speler)%2 +1
+    print(f"andere_speler", andere_speler)
+    delta = [-1, 0, 1, 0, -1, -1, 1, 1, -1] # 8 richtingen
+    for j in range(8):
+        print(x,y)
+        if x+delta[j] > speelveld_grootte or x+delta[j] < 0 or y+delta[j+1] > speelveld_grootte or y+delta[j+1] < 0:
+            print("buiten bereik")
+            pass
+        elif lijst1[(locatie_omzetten(x+delta[j],y+delta[j+1]))] == andere_speler:
+            print("andere", x+delta[j],y+delta[j+1])
+            
+        elif lijst1[locatie_omzetten(x+delta[j],y+delta[j+1])] == speler:
+            print("je eigen stenen",x+delta[j],y+delta[j+1])
+            
+        else:
+            lege_plaatsen.append((x+delta[j],y+delta[j+1]))
+    print(lege_plaatsen)
 
 
 def teken_stuk(x,y,speler):
@@ -84,45 +120,49 @@ def teken_stuk(x,y,speler):
     x -= x % (plaatje_size / speelveld_grootte)
     y -= y % (plaatje_size / speelveld_grootte) 
     
-    grid_x = x / (plaatje_size/speelveld_grootte) + 1
-    grid_y = y / (plaatje_size/speelveld_grootte) + 1
+    grid_x = round(x / (plaatje_size/speelveld_grootte) + 1)
+    grid_y = round(y / (plaatje_size/speelveld_grootte) + 1)
     
     
-    for i in cirkel_lijst:
-        if i.x == grid_x and i.y == grid_y:
-            print("niet mogelijk om hier te plaatsen")
-            return
-    
+    hokjes(locatie_omzetten(grid_x,grid_y), speler)
+    #oude code
+        # for i in lijst1:
+        #     if lijst1[i] == locatie_omzetten(grid_x,grid_y):
+        #         print("niet mogelijk om hier te plaatsen")
+        #         return
     x += offset//2
     y += offset//2  
+    if lijst1[locatie_omzetten(grid_x,grid_y)] != 0:
+        print("niet mogelijk om hier te plaatsen")
+        return
     
-    cirkel_lijst.append(cirkel_info(grid_x,grid_y,beurt_speler))
+    plaatsen(grid_x,grid_y,speler)
     if speler == 1:
         beurt_speler = 2
         circle_image = Image.open("Screenshot 1 v2.png")
         circle_image = circle_image.resize((int(straal), int(straal)))
-        #draw.ellipse(((x,y),(x+straal,y+straal)),fill="Blue")
-        draw.bitmap((x, y), circle_image.convert('RGBA'))
+        draw.ellipse(((x,y),(x+straal,y+straal)),fill="Blue")
+        # draw.bitmap((x, y), circle_image.convert('RGBA'))
     elif speler == 2:
         circle_image = Image.open("Screenshot1.png")
         circle_image = circle_image.resize((int(straal), int(straal)))
-        #draw.ellipse(((x,y),(x+straal,y+straal)),fill="Red")
-        draw.bitmap((x, y), circle_image.convert('RGBA'))
+        draw.ellipse(((x,y),(x+straal,y+straal)),fill="Red")
+        # draw.bitmap((x, y), circle_image.convert('RGBA'))
         beurt_speler = 1
         
         
-    
+    print(lijst1)
     global foto
     foto = ImageTk.PhotoImage(plaatje)
     afbeelding.configure(image=foto)
 
 
-    
+
 def muisKlik(ea):
     global beurt_speler 
     teken_stuk(ea.x,ea.y,beurt_speler)
-       
-    #print(cirkel_lijst)
+    
+
 
 
 # een Label kan ook gebruikt worden om een PhotoImage te laten zien
