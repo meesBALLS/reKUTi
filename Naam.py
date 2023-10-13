@@ -49,7 +49,7 @@ afbeelding.configure(width=plaatje_size, height=plaatje_size)
 # returned de index van de lijst waar de x en y coordinaten van de grid zijn
 def grid_lijst(x,y):
     if x > grid_size or x<0 or y<0 or y > grid_size:
-        return
+        return -1 # dit fixt een error
     return grid_size*(y-1)+x-1
 
 # returned de x en y coordinaten van de grid op de gegeven index
@@ -95,31 +95,39 @@ def begin_stukken(veld_grootte):
 
 def omliggende_check(speler):
     lege_plaatsen = set()
-
-    temp = []
+    temp = set()
+    
     andere_speler = speler
     speler = (speler)%2 +1
+    
     delta = [-1, 0, 1, 0, -1, -1, 1, 1, -1] # 8 richtingen
-    for i in range(0,len(lijst1)):
+    
+    for i in range(0,grid_size**2):
         if lijst1[i] == speler:
             x,y = lijst_grid(i)
-            for j in range(8):               
-                if x+delta[j] > grid_size or x+delta[j] < 0 or y+delta[j+1] > grid_size or y+delta[j+1] < 0:
+            
+            for j in range(8):          
+                dx, dy = delta[j], delta[j+1]
+                if grid_size < x+dx < 0 or grid_size < y+dy < 0:
                     print("buiten bereik")                   
-                elif lijst1[(grid_lijst(x+delta[j],y+delta[j+1]))] == andere_speler:
-                    for k in range(1,min(x+delta[j]%grid_size, y+delta[j+1]%grid_size)):
-                        if x+k*delta[j] > grid_size or x+k*delta[j] <= 0 or y+k*delta[j+1] > grid_size or y+k*delta[j+1] <= 0:
+                elif lijst1[(grid_lijst(x+dx,y+dy))] == andere_speler:
+                    
+                    for k in range(1,min(x+dx%grid_size, y+dy%grid_size)):
+                        
+                        if grid_size < x+k*dx <= 0 or grid_size < y+k*dy <= 0:
+                            print("buiten kut")
                             break
-                        elif lijst1[grid_lijst(x+k*delta[j], y+k*delta[j+1])] == andere_speler:
-                            temp.append((x+k*delta[j], y+k*delta[j+1]))
-                            
-                        elif lijst1[grid_lijst(x+k*delta[j], y+k*delta[j+1])] == 0:
-                            lege_plaatsen.add((x+k*delta[j], y+k*delta[j+1]))
-                            
+                        elif lijst1[grid_lijst(x+k*dx, y+k*dy)] == andere_speler:
+                            temp.add((x+k*dx, y+k*dy))
+                        elif lijst1[grid_lijst(x+k*dx, y+k*dy)] == 0:
+                            lege_plaatsen.add((x+k*dx, y+k*dy))
                             break
-    print("lege mogelijke plaatsen", lege_plaatsen)        
-        
+
+                            
+    #print("lege mogelijke plaatsen:", lege_plaatsen)        
+    print("temp:", temp)    
     return lege_plaatsen
+
 
 def teken_zetten(speler):
     for i in omliggende_check(speler):
@@ -160,8 +168,6 @@ def teken_stuk(x,y,speler, computer=False):
     #omliggende_check(speler)
     
 
-    
-    print(grid_scherm(grid_x,grid_y))
     # speler logica
     if speler == 1:
         #circle_image = Image.open("Screenshot 1 v2.png")
