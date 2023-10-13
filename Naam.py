@@ -60,6 +60,10 @@ def lijst_grid(i):
 def speler_lijst(x, y, speler):
     lijst1[grid_lijst(x,y)] = speler
 
+def speler_lijst_index(index, speler):
+    lijst1[index] = speler
+  
+
 # returned de x en y coordinaten van de grid op de gegeven scherm coordinaten
 def scherm_grid(x,y):
     omzetting = lambda a : round(a / (plaatje_size / grid_size) + 1)  # noqa: E731
@@ -101,6 +105,7 @@ def omliggende_check(speler):
     
     delta = [-1, 0, 1, 0, -1, -1, 1, 1, -1] # 8 richtingen
     
+
     for i in range(0,grid_size**2):
         if lijst1[i] == speler:
             x,y = lijst_grid(i)
@@ -117,8 +122,10 @@ def omliggende_check(speler):
                             break
                         elif lijst1[grid_lijst(new_x, new_y)] == 0:
                             lege_plaatsen.add((new_x, new_y))
+                           
                             break                    
-    #print("lege mogelijke plaatsen:", lege_plaatsen)        
+
+ 
     return lege_plaatsen
 
 
@@ -140,17 +147,42 @@ def teken_zetten(speler):
 
 
 
+def stukken_veranderen(speler, x, y):
+    andere_speler = speler % 2 + 1
+
+    geslagen_stukken = []
+
+    delta = [-1, 0, 1, 0, -1, -1, 1, 1, -1] # 8 richtingen
+    for j in range(8):          
+        dx, dy = delta[j], delta[j+1]
+        if (x+dx and y+dy ) <= grid_size and (x+dx and y+dy) >= 0 and lijst1[(grid_lijst(x+dx,y+dy))] == andere_speler:
+            for k in range(1,grid_size):
+                new_x, new_y = x+k*dx, y+k*dy
+                if (new_x or new_y )> grid_size or (new_x or new_y) < 0:
+                    print("buiten kut")
+                    break
+                elif lijst1[grid_lijst(new_x, new_y)] == andere_speler:
+
+                    geslagen_stukken.append((new_x, new_y))
+                elif lijst1[grid_lijst(new_x, new_y)] == speler:
+
+                    for i in geslagen_stukken:
+                        teken_stuk(*grid_scherm(i[0],i[1]),speler = speler,computer = True)
+                        speler_lijst(*i,speler)
+
+                    break
+                elif lijst1[grid_lijst(new_x, new_y)] == 0:
+                    geslagen_stukken.clear()
+                    break
+                
 
 def teken_stuk(x,y,speler, computer=False):
     global beurt_speler    
+    
     x,y = snap_plaats(x,y)
     grid_x, grid_y = scherm_grid(x,y)
 
-    # oude code
-        # for i in lijst1:
-        #     if lijst1[i] == grid_lijst(grid_x,grid_y):
-        #         print("niet mogelijk om hier te plaatsen")
-        #         return
+    #
     x += offset//2
     y += offset//2  
     
@@ -158,11 +190,11 @@ def teken_stuk(x,y,speler, computer=False):
     if lijst1[grid_lijst(grid_x,grid_y)] != 0 and computer is not True:
         #print("niet mogelijk om hier te plaatsen")
         return
-    
-    if (grid_x,grid_y) not in [opties for opties in omliggende_check((speler % 2 + 1))] and computer is False:
-        #print("niet mogelijk om hier te plaatsen")
+
+    if (grid_x,grid_y) not in [opties for opties in omliggende_check((speler%2+1))] and computer is False:
+        print("niet mogelijk om hier te plaatsen")
         return
-    
+    stukken_veranderen(beurt_speler, grid_x, grid_y)
     speler_lijst(grid_x,grid_y,speler)
     #omliggende_check(speler)
     
@@ -191,6 +223,7 @@ def muisKlik(ea):
     global beurt_speler 
     teken_stuk(ea.x,ea.y,beurt_speler)
     teken_zetten(beurt_speler%2+1)
+    
 
 # een Label kan ook gebruikt worden om een PhotoImage te laten zien
 speelveld_tekenen(grid_size)
