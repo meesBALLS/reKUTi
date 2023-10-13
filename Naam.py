@@ -83,6 +83,7 @@ def speelveld_tekenen(veld_grootte):
         draw.line(((0,lijn_pos*i),(plaatje_size,lijn_pos*i)),fill="black")
     
     begin_stukken(veld_grootte)
+    
 
 def begin_stukken(veld_grootte):
     center = plaatje_size / 2
@@ -93,6 +94,7 @@ def begin_stukken(veld_grootte):
 
 def omliggende_check(speler):
     lege_plaatsen = set()
+
     temp = []
     andere_speler = speler
     speler = (speler)%2 +1
@@ -112,19 +114,14 @@ def omliggende_check(speler):
                             
                         elif lijst1[grid_lijst(x+k*delta[j], y+k*delta[j+1])] == 0:
                             lege_plaatsen.add((x+k*delta[j], y+k*delta[j+1]))
+                            
                             break
-    print("lege mogelijke plaatsen", lege_plaatsen)
-    for i in lege_plaatsen:
-        x,y = i
-        x = round((x -1)*(plaatje_size/grid_size))
-        y = round((y -1)*(plaatje_size/grid_size))
+    print("lege mogelijke plaatsen", lege_plaatsen)        
         
-        draw.ellipse(((x,y),(x+straal/5,y+straal/5)),fill="Grey")
     return lege_plaatsen
 
 def teken_stuk(x,y,speler, computer=False):
     global beurt_speler    
-    
     x,y = snap_plaats(x,y)
     grid_x, grid_y = scherm_grid(x,y)
 
@@ -147,6 +144,14 @@ def teken_stuk(x,y,speler, computer=False):
     
     speler_lijst(grid_x,grid_y,speler)
     omliggende_check(speler)
+    
+    for i in omliggende_check(speler):
+        a,b = i
+        
+        a,b = grid_scherm(a,b)
+        a += offset*4
+        b += offset*4  
+        draw.ellipse(((a,b),(a+straal/5,b+straal/5)),outline="Grey", width=5)
     
     print(grid_scherm(grid_x,grid_y))
     # speler logica
