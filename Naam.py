@@ -83,6 +83,7 @@ def speelveld_tekenen(veld_grootte):
         draw.line(((0,lijn_pos*i),(plaatje_size,lijn_pos*i)),fill="black")
     
     begin_stukken(veld_grootte)
+    teken_zetten(beurt_speler-1)
     
 
 def begin_stukken(veld_grootte):
@@ -120,6 +121,19 @@ def omliggende_check(speler):
         
     return lege_plaatsen
 
+def teken_zetten(speler):
+    for i in omliggende_check(speler):
+        a,b = i
+        
+        a,b = grid_scherm(a,b)
+        a += offset*4
+        b += offset*4  
+        draw.ellipse(((a,b),(a+straal/5,b+straal/5)),outline="Grey", width=5)
+    
+    global foto
+    foto = ImageTk.PhotoImage(plaatje)
+    afbeelding.configure(image=foto)
+
 def teken_stuk(x,y,speler, computer=False):
     global beurt_speler    
     x,y = snap_plaats(x,y)
@@ -143,15 +157,9 @@ def teken_stuk(x,y,speler, computer=False):
         return
     
     speler_lijst(grid_x,grid_y,speler)
-    omliggende_check(speler)
+    #omliggende_check(speler)
     
-    for i in omliggende_check(speler):
-        a,b = i
-        
-        a,b = grid_scherm(a,b)
-        a += offset*4
-        b += offset*4  
-        draw.ellipse(((a,b),(a+straal/5,b+straal/5)),outline="Grey", width=5)
+
     
     print(grid_scherm(grid_x,grid_y))
     # speler logica
@@ -177,6 +185,7 @@ def teken_stuk(x,y,speler, computer=False):
 def muisKlik(ea):
     global beurt_speler 
     teken_stuk(ea.x,ea.y,beurt_speler)
+    teken_zetten(beurt_speler%2+1)
 
 # een Label kan ook gebruikt worden om een PhotoImage te laten zien
 speelveld_tekenen(grid_size)
