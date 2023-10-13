@@ -83,7 +83,7 @@ def speelveld_tekenen(veld_grootte):
         draw.line(((0,lijn_pos*i),(plaatje_size,lijn_pos*i)),fill="black")
     
     begin_stukken(veld_grootte)
-    teken_zetten(beurt_speler-1)
+    teken_zetten(beurt_speler%2+1)
     
 
 def begin_stukken(veld_grootte):
@@ -95,7 +95,6 @@ def begin_stukken(veld_grootte):
 
 def omliggende_check(speler):
     lege_plaatsen = set()
-    temp = set()
     
     andere_speler = speler
     speler = (speler)%2 +1
@@ -108,24 +107,18 @@ def omliggende_check(speler):
             
             for j in range(8):          
                 dx, dy = delta[j], delta[j+1]
-                if grid_size < x+dx < 0 or grid_size < y+dy < 0:
-                    print("buiten bereik")                   
-                elif lijst1[(grid_lijst(x+dx,y+dy))] == andere_speler:
-                    
-                    for k in range(1,min(x+dx%grid_size, y+dy%grid_size)):
-                        
-                        if grid_size < x+k*dx <= 0 or grid_size < y+k*dy <= 0:
+                if (x+dx and y+dy ) <= grid_size and (x+dx and y+dy) >= 0 and lijst1[(grid_lijst(x+dx,y+dy))] == andere_speler:
+                    for k in range(1,grid_size):
+                        new_x, new_y = x+k*dx, y+k*dy
+                        if (new_x or new_y )> grid_size or (new_x or new_y) < 0:
                             print("buiten kut")
                             break
-                        elif lijst1[grid_lijst(x+k*dx, y+k*dy)] == andere_speler:
-                            temp.add((x+k*dx, y+k*dy))
-                        elif lijst1[grid_lijst(x+k*dx, y+k*dy)] == 0:
-                            lege_plaatsen.add((x+k*dx, y+k*dy))
+                        elif lijst1[grid_lijst(new_x, new_y)] == speler:
                             break
-
-                            
+                        elif lijst1[grid_lijst(new_x, new_y)] == 0:
+                            lege_plaatsen.add((new_x, new_y))
+                            break                    
     #print("lege mogelijke plaatsen:", lege_plaatsen)        
-    print("temp:", temp)    
     return lege_plaatsen
 
 
@@ -141,6 +134,12 @@ def teken_zetten(speler):
     global foto
     foto = ImageTk.PhotoImage(plaatje)
     afbeelding.configure(image=foto)
+
+
+# Voeg een lijst toe om de locaties van oude cirkels op te slaan
+
+
+
 
 def teken_stuk(x,y,speler, computer=False):
     global beurt_speler    
