@@ -63,7 +63,6 @@ def speler_lijst(x, y, speler):
 def speler_lijst_index(index, speler):
     lijst1[index] = speler
   
-
 # returned de x en y coordinaten van de grid op de gegeven scherm coordinaten
 def scherm_grid(x,y):
     omzetting = lambda a : round(a / (plaatje_size / grid_size) + 1)  # noqa: E731
@@ -88,7 +87,6 @@ def speelveld_tekenen(veld_grootte):
     
     begin_stukken(veld_grootte)
     teken_zetten(beurt_speler%2+1)
-    
 
 def begin_stukken(veld_grootte):
     center = plaatje_size / 2
@@ -148,6 +146,7 @@ def teken_zetten(speler):
 
 
 def stukken_veranderen(speler, x, y):
+    global anti_recursie
     andere_speler = speler % 2 + 1
 
     geslagen_stukken = []
@@ -164,10 +163,12 @@ def stukken_veranderen(speler, x, y):
                 elif lijst1[grid_lijst(new_x, new_y)] == andere_speler:
 
                     geslagen_stukken.append((new_x, new_y))
+
                 elif lijst1[grid_lijst(new_x, new_y)] == speler:
 
                     for i in geslagen_stukken:
-                        teken_stuk(*grid_scherm(i[0],i[1]),speler = speler,computer = True)
+                        print(i)
+                        teken_stuk(*grid_scherm(i[0],i[1]),speler = speler,computer = True, kut_recursie=False)
                         speler_lijst(*i,speler)
 
                     break
@@ -176,7 +177,7 @@ def stukken_veranderen(speler, x, y):
                     break
                 
 
-def teken_stuk(x,y,speler, computer=False):
+def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
     global beurt_speler    
     
     x,y = snap_plaats(x,y)
@@ -194,9 +195,10 @@ def teken_stuk(x,y,speler, computer=False):
     if (grid_x,grid_y) not in [opties for opties in omliggende_check((speler%2+1))] and computer is False:
         print("niet mogelijk om hier te plaatsen")
         return
-    stukken_veranderen(beurt_speler, grid_x, grid_y)
+    if kut_recursie:
+        stukken_veranderen(beurt_speler, grid_x, grid_y)
     speler_lijst(grid_x,grid_y,speler)
-    #omliggende_check(speler)
+    
     
 
     # speler logica
@@ -222,6 +224,7 @@ def teken_stuk(x,y,speler, computer=False):
 def muisKlik(ea):
     global beurt_speler 
     teken_stuk(ea.x,ea.y,beurt_speler)
+    omliggende_check(beurt_speler)
     teken_zetten(beurt_speler%2+1)
     
 
@@ -229,3 +232,4 @@ def muisKlik(ea):
 speelveld_tekenen(grid_size)
 afbeelding.bind("<Button-1>", muisKlik)
 scherm.mainloop()
+
