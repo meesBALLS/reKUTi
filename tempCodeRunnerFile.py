@@ -1,13 +1,8 @@
-def teken_zetten(speler):
-#     for i in omliggende_check(speler):
-#         a,b = i
-        
-#         a,b = grid_scherm(a,b)
-#         a += offset*4
-#         b += offset*4  
-#         draw.ellipse(((a,b),(a+straal/5,b+straal/5)),outline="Grey", width=5)
-    
-#     global foto
-#     foto = ImageTk.PhotoImage(plaatje)
-#     afbeelding.configure(image=foto)
-
+if (new_x or new_y )> grid_size or (new_x or new_y) < 0:
+                            print("buiten kut")
+                            break
+                        elif lijst1[grid_lijst(new_x, new_y)] == speler:
+                            break
+                        elif lijst1[grid_lijst(new_x, new_y)] == 0:
+                            lege_plaatsen.add((new_x, new_y))
+                            break

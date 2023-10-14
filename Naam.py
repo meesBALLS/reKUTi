@@ -23,12 +23,15 @@ scherm.pack()
 
 lijst1 = [(0)for i in range(0, grid_size**2)]
 
+
+
 def lees_dropdown(_):
     global grid_size, lijst1, offset, straal
     #haalt de grid_size uit de dropdown
     grid_size = int(default.get().split("x")[0])
     draw.rectangle((0, 0, plaatje_size, plaatje_size), fill="White")
     #reset de lijst
+
     lijst1 = [(0)for i in range(0, grid_size**2)]
     
     offset = plaatje_size / grid_size / 10
@@ -52,9 +55,8 @@ afbeelding.configure(bg="white")
 # lees in alle functies hieronder, tot snap_plaats, de _ als "naar"
 # returned de index van de lijst waar de x en y coordinaten van de grid zijn
 def grid_lijst(x,y):
-    if x > grid_size or x<0 or y<0 or y > grid_size:
-        return -1 # dit fixt een error
-    return grid_size*(y-1)+x-1
+    return -1 if x > grid_size or x<=0 or y<=0 or y > grid_size else grid_size*(y-1)+x-1
+
 
 # returned de x en y coordinaten van de grid op de gegeven index
 def lijst_grid(i):
@@ -62,7 +64,7 @@ def lijst_grid(i):
 
 # veranderd de waarde van de lijst op de gegeven index naar de gegeven speler
 def speler_lijst(x, y, speler):
-    lijst1[grid_lijst(x,y)] = speler
+    lijst1[grid_size*(y-1)+x-1] = speler
 
 def speler_lijst_index(index, speler):
     lijst1[index] = speler
@@ -106,9 +108,8 @@ def omliggende_check(speler):
     speler = (speler)%2 +1
     
     delta = [-1, 0, 1, 0, -1, -1, 1, 1, -1] # 8 richtingen
-    
-
-    for i in range(0,grid_size**2):
+    grid_squared = grid_size**2
+    for i in range(0,grid_squared):
         if lijst1[i] == speler:
             x,y = lijst_grid(i)
             
@@ -124,10 +125,7 @@ def omliggende_check(speler):
                             break
                         elif lijst1[grid_lijst(new_x, new_y)] == 0:
                             lege_plaatsen.add((new_x, new_y))
-                           
-                            break                    
-
- 
+                            break
     return lege_plaatsen
 
 
@@ -161,37 +159,32 @@ def teken_zetten(speler):
 
 def stukken_veranderen(speler, x, y):
     andere_speler = speler % 2 + 1
-
-    geslagen_stukken = []
-
     delta = [-1, 0, 1, 0, -1, -1, 1, 1, -1] # 8 richtingen
-    for j in range(8):          
+    for j in range(8):
         dx, dy = delta[j], delta[j+1]
+        geslagen_stukken = []
         if (x+dx and y+dy ) <= grid_size and (x+dx and y+dy) >= 0 and lijst1[(grid_lijst(x+dx,y+dy))] == andere_speler:
             for k in range(1,grid_size):
+                
                 new_x, new_y = x+k*dx, y+k*dy
-                if (new_x or new_y )> grid_size or (new_x or new_y) < 0:
+                if (new_x or new_y )>= grid_size or (new_x or new_y) <= 0 or lijst1[grid_lijst(new_x, new_y)] == 0:
                     print("buiten kut")
                     break
                 elif lijst1[grid_lijst(new_x, new_y)] == andere_speler:
-
                     geslagen_stukken.append((new_x, new_y))
-
                 elif lijst1[grid_lijst(new_x, new_y)] == speler:
-
+                    
                     for i in geslagen_stukken:
                         print(i)
                         teken_stuk(*grid_scherm(i[0],i[1]),speler = speler,computer = True, kut_recursie=False)
                         speler_lijst(*i,speler)
 
                     break
-                elif lijst1[grid_lijst(new_x, new_y)] == 0:
-                    geslagen_stukken.clear()
-                    break
+               
                 
 
 def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
-    global beurt_speler    
+    global beurt_speler
     
     x,y = snap_plaats(x,y)
     grid_x, grid_y = scherm_grid(x,y)
