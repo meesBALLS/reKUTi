@@ -1,4 +1,4 @@
-from tkinter       import Frame, Label
+from tkinter       import Frame, Label, Button
 import tkinter     as tk
 import threading
 from PIL.ImageDraw import Draw
@@ -21,7 +21,41 @@ scherm.configure(background="lightblue")
 scherm.configure(width=scherm_size, height=scherm_size)
 scherm.pack()
 
+
 lijst1 = [(0)for i in range(0, grid_size**2)]
+
+def knop1_klik():
+    global beurt_speler
+    beurt_speler = beurt_speler%2+1
+    # teken_zetten(beurt_speler%2+1)
+
+def knop2_klik():
+    global beurt_speler
+    teken_zetten(beurt_speler%2+1)
+
+# def text_score(speler):
+#     score = lijst1.count(speler)
+#     andere_score = lijst1.count(speler%2+1)
+#     score_text.set("rood" if speler == 1 else "blauw" 'score:', score \
+#     ,"blauw" if speler ==2 else "rood", andere_score)
+    
+
+# score_box = tk.Tk()
+# score_text = tk.StringVar()
+# score_text.set("blauw: 2, rood:2")
+
+# tekst_label = tk.Label(score_box, textvariable=score_text, width=50, height=15)
+# tekst_label.place(x=650, y=100)
+
+def popupmsg(msg):
+    popup = tk.Tk()
+    popup.wm_title("!")
+    label = tk.Label(popup, text=msg)
+    label.pack(side="top", fill="x", pady=10)
+    B1 = tk.Button(popup, text="Okay", command = popup.destroy)
+    B1.pack()
+    popup.mainloop()
+    
 
 
 
@@ -66,8 +100,6 @@ def lijst_grid(i):
 def speler_lijst(x, y, speler):
     lijst1[grid_size*(y-1)+x-1] = speler
 
-def speler_lijst_index(index, speler):
-    lijst1[index] = speler
   
 # returned de x en y coordinaten van de grid op de gegeven scherm coordinaten
 def scherm_grid(x,y):
@@ -92,7 +124,7 @@ def speelveld_tekenen(veld_grootte):
         draw.line(((0,lijn_pos*i),(plaatje_size,lijn_pos*i)),fill="black")
     
     begin_stukken(veld_grootte)
-    teken_zetten(beurt_speler%2+1)
+    # teken_zetten(beurt_speler%2+1)
 
 def begin_stukken(veld_grootte):
     center = plaatje_size / 2
@@ -118,7 +150,7 @@ def omliggende_check(speler):
                 if (x+dx and y+dy ) <= grid_size and (x+dx and y+dy) >= 0 and lijst1[(grid_lijst(x+dx,y+dy))] == andere_speler:
                     for k in range(1,grid_size):
                         new_x, new_y = x+k*dx, y+k*dy
-                        if (new_x or new_y )> grid_size or (new_x or new_y) < 0:
+                        if (new_x or new_y ) > grid_size or (new_x or new_y) < 0:
                             print("buiten kut")
                             break
                         elif lijst1[grid_lijst(new_x, new_y)] == speler:
@@ -169,9 +201,15 @@ def stukken_veranderen(speler, x, y):
                 new_x, new_y = x+k*dx, y+k*dy
                 if (new_x or new_y ) > grid_size or (new_x or new_y) <= 0 or lijst1[grid_lijst(new_x, new_y)] == 0:
                     print("buiten kut")
+                    del geslagen_stukken[:-(k+1)]
                     break
                 elif lijst1[grid_lijst(new_x, new_y)] == andere_speler:
-                    geslagen_stukken.append((new_x, new_y))
+                    if (x+(k+1)*dx or y+(k+1)*dy) > grid_size or (x+(k+1)*dx or y+(k+1)*dy) <= 0 and lijst1[grid_lijst(x+(k+1)*dx,y+(k+1)*dy)]!=0:
+                        del geslagen_stukken[:-k]
+                        break
+                    else:    
+                        geslagen_stukken.append((new_x, new_y))
+                        
                 elif lijst1[grid_lijst(new_x, new_y)] == speler:
                     
                     for i in geslagen_stukken:
@@ -212,6 +250,7 @@ def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
         #draw.bitmap((x, y), circle_image.convert('RGB'))
         
         draw.ellipse(((x,y),(x+straal,y+straal)),fill="Blue")
+        
         beurt_speler = 2
     elif speler == 2:
         #circle_image = Image.open("Screenshot1.png")
@@ -219,6 +258,7 @@ def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
         #draw.bitmap((x, y), circle_image.convert('RGB'))
         
         draw.ellipse(((x,y),(x+straal,y+straal)),fill="Red")
+        
         beurt_speler = 1
         
     global foto
@@ -233,11 +273,24 @@ def muisKlik(ea):
     t1.start()
     t1.join()
     #omliggende_check(beurt_speler)
-    teken_zetten(beurt_speler%2+1)
+    # teken_zetten(beurt_speler%2+1)
+   
+    if lijst1.count(1) == 0 or lijst1.count(1)+lijst1.count(2)==grid_size**2 and lijst1.count(2)>grid_size**2/2:
+        popupmsg("rood gewind")
+    elif lijst1.count(2) ==0 or lijst1.count(1)+lijst1.count(2)==grid_size**2:
+        popupmsg("blauw gewind")
+    teken_zetten(3)
+    print(f"aantal stenen {'blauw' if beurt_speler ==1 else 'rood'}",lijst1.count(beurt_speler))
+    print(f"aantal stenen {'blauw' if beurt_speler ==2 else 'rood'}",lijst1.count(beurt_speler%2+1))
+    
 
     
 
 # een Label kan ook gebruikt worden om een PhotoImage te laten zien
+knop1 = Button(scherm, text="beurd overslaan", command=knop1_klik)
+knop1.place(x=650, y=30)
+knop2 = Button(scherm, text="hint", command=knop2_klik)
+knop2.place(x=650, y=60)
 speelveld_tekenen(grid_size)
 afbeelding.bind("<Button-1>", muisKlik)
 scherm.mainloop()
