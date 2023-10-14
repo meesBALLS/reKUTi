@@ -1,5 +1,6 @@
 from tkinter       import Frame, Label
 import tkinter     as tk
+import threading
 from PIL.ImageDraw import Draw
 from PIL.ImageTk   import PhotoImage
 from PIL           import Image, ImageTk
@@ -12,6 +13,7 @@ offset = plaatje_size / grid_size / 10
 straal = plaatje_size / grid_size - offset
 
 beurt_speler = 1
+vorige_zetten = []
 
 scherm = Frame()
 scherm.master.title("reKUTi")
@@ -25,7 +27,7 @@ def lees_dropdown(_):
     global grid_size, lijst1, offset, straal
     #haalt de grid_size uit de dropdown
     grid_size = int(default.get().split("x")[0])
-    draw.rectangle((0, 0, plaatje_size, plaatje_size), fill="white")
+    draw.rectangle((0, 0, plaatje_size, plaatje_size), fill="White")
     #reset de lijst
     lijst1 = [(0)for i in range(0, grid_size**2)]
     
@@ -43,8 +45,10 @@ plaatje = Image.new( mode="RGBA" , size=(plaatje_size,plaatje_size))
 draw = Draw(plaatje)
 afbeelding = Label(scherm) 
 afbeelding.place(x=0, y=0) 
-afbeelding.configure(width=plaatje_size, height=plaatje_size)
-
+afbeelding.configure(width=plaatje_size, height=plaatje_size, bg="White")
+# BEGIN: 7j5d8f4j5d8f
+afbeelding.configure(bg="white")
+# END: 7j5d8f4j5d8f
 # lees in alle functies hieronder, tot snap_plaats, de _ als "naar"
 # returned de index van de lijst waar de x en y coordinaten van de grid zijn
 def grid_lijst(x,y):
@@ -128,12 +132,22 @@ def omliggende_check(speler):
 
 
 def teken_zetten(speler):
+    if vorige_zetten != []:
+        for i in vorige_zetten:
+            a=i[0]
+            b=i[1]
+            if lijst1[grid_lijst(a,b)] == 0:
+                a,b = grid_scherm(a,b)
+                a += offset//2
+                b+= offset//2
+                draw.rectangle((a, b, a+straal, b+straal), fill="White")
     for i in omliggende_check(speler):
         a,b = i
-        
+        vorige_zetten.append((a,b))
         a,b = grid_scherm(a,b)
+
         a += offset*4
-        b += offset*4  
+        b += offset*4
         draw.ellipse(((a,b),(a+straal/5,b+straal/5)),outline="Grey", width=5)
     
     global foto
@@ -146,7 +160,6 @@ def teken_zetten(speler):
 
 
 def stukken_veranderen(speler, x, y):
-    global anti_recursie
     andere_speler = speler % 2 + 1
 
     geslagen_stukken = []
@@ -223,9 +236,14 @@ def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
 
 def muisKlik(ea):
     global beurt_speler 
+
     teken_stuk(ea.x,ea.y,beurt_speler)
-    omliggende_check(beurt_speler)
+    t1 = threading.Thread(target=omliggende_check, args=(beurt_speler,))
+    t1.start()
+    t1.join()
+    #omliggende_check(beurt_speler)
     teken_zetten(beurt_speler%2+1)
+
     
 
 # een Label kan ook gebruikt worden om een PhotoImage te laten zien
