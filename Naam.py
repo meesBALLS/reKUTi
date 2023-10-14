@@ -163,11 +163,11 @@ def stukken_veranderen(speler, x, y):
     for j in range(8):
         dx, dy = delta[j], delta[j+1]
         geslagen_stukken = []
-        if (x+dx and y+dy ) <= grid_size and (x+dx and y+dy) >= 0 and lijst1[(grid_lijst(x+dx,y+dy))] == andere_speler:
+        if (x+dx and y+dy ) <= grid_size and (x+dx and y+dy) > 0 and lijst1[(grid_lijst(x+dx,y+dy))] == andere_speler:
             for k in range(1,grid_size):
                 
                 new_x, new_y = x+k*dx, y+k*dy
-                if (new_x or new_y )>= grid_size or (new_x or new_y) <= 0 or lijst1[grid_lijst(new_x, new_y)] == 0:
+                if (new_x or new_y ) > grid_size or (new_x or new_y) <= 0 or lijst1[grid_lijst(new_x, new_y)] == 0:
                     print("buiten kut")
                     break
                 elif lijst1[grid_lijst(new_x, new_y)] == andere_speler:
@@ -175,10 +175,8 @@ def stukken_veranderen(speler, x, y):
                 elif lijst1[grid_lijst(new_x, new_y)] == speler:
                     
                     for i in geslagen_stukken:
-                        print(i)
                         teken_stuk(*grid_scherm(i[0],i[1]),speler = speler,computer = True, kut_recursie=False)
                         speler_lijst(*i,speler)
-
                     break
                
                 
