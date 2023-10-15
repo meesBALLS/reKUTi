@@ -22,9 +22,26 @@ scherm.configure(background="lightblue")
 scherm.configure(width=scherm_size, height=scherm_size)
 scherm.pack()
 
-
 lijst1 = [(0)for i in range(0, grid_size**2)]
-teller = [0]
+
+canvas = tk.Canvas(scherm, width=200, height=20)
+canvas.place(x=650, y=100)
+
+blue_label = tk.Label(scherm, text="Blauw: 0", font=("Arial", 10))
+blue_label.place(x=650, y=120)
+red_label = tk.Label(scherm, text="Rood: 0", font=("Arial", 10))
+red_label.place(x=750, y=120)
+
+turn_label = tk.Label(scherm, text="Rood is aan de beurt", font=("Arial", 10))
+turn_label.place(x=650, y=160)
+
+plaatje = Image.new( mode="RGBA" , size=(plaatje_size,plaatje_size)) 
+draw = Draw(plaatje)
+afbeelding = Label(scherm) 
+afbeelding.place(x=0, y=0) 
+afbeelding.configure(width=plaatje_size, height=plaatje_size, bg="White")
+afbeelding.configure(bg="white")
+
 def knop1_klik():
     global beurt_speler
     beurt_speler = beurt_speler%2+1
@@ -33,9 +50,9 @@ def knop1_klik():
     teken_score()
 
 def knop2_klik():
-    global beurt_speler
-    teller[0] += 1
-    if teller[0]%2 == 1:
+    global beurt_speler, zetten_tekenen
+    zetten_tekenen = not zetten_tekenen
+    if zetten_tekenen:
         teken_zetten(beurt_speler%2+1)
     else:
         teken_zetten(3)
@@ -61,30 +78,6 @@ def lees_dropdown(_):
     offset = plaatje_size / grid_size / 10
     straal = plaatje_size / grid_size - offset 
     speelveld_tekenen(grid_size)
-    
-default = tk.StringVar(scherm)
-default.set("6x6")
-opties = ["6x6", "8x8", "10x10", "20x20", "30x30"]
-drop = tk.OptionMenu(scherm, default,*opties, command=lees_dropdown)
-drop.place(x=0, y=600)
-
-canvas = tk.Canvas(scherm, width=200, height=20)
-canvas.place(x=650, y=100)
-
-blue_label = tk.Label(scherm, text="Blauw: 0", font=("Arial", 10))
-blue_label.place(x=650, y=120)
-red_label = tk.Label(scherm, text="Rood: 0", font=("Arial", 10))
-red_label.place(x=750, y=120)
-
-turn_label = tk.Label(scherm, text="Rood is aan de beurt", font=("Arial", 10))
-turn_label.place(x=650, y=160)
-
-plaatje = Image.new( mode="RGBA" , size=(plaatje_size,plaatje_size)) 
-draw = Draw(plaatje)
-afbeelding = Label(scherm) 
-afbeelding.place(x=0, y=0) 
-afbeelding.configure(width=plaatje_size, height=plaatje_size, bg="White")
-afbeelding.configure(bg="white")
 
 # lees in alle functies hieronder, tot snap_plaats, de _ als "naar"
 # returned de index van de lijst waar de x en y coordinaten van de grid zijn
@@ -128,14 +121,7 @@ def teken_score():
     canvas.create_rectangle(200 * red_percentage, 0, 200, 20, fill="red")
     blue_label.config(text=f"Blauw: {lijst1.count(1)}")
     red_label.config(text=f"Rood: {lijst1.count(2)}")
-    turn_label.config(text=f"Rood is aan de beurt" if beurt_speler == 2 else f"Blauw is aan de beurt")
-# score_box = tk.Tk()
-# score_text = tk.StringVar()
-# score_text.set("blauw: 2, rood:2")
-
-# tekst_label = tk.Label(score_box, textvariable=score_text, width=50, height=15)
-# tekst_label.place(x=650, y=100)
-
+    turn_label.config(text="Rood is aan de beurt" if beurt_speler == 2 else "Blauw is aan de beurt")
 
 
 
@@ -183,6 +169,7 @@ def omliggende_check(speler):
                         elif lijst1[grid_lijst(new_x, new_y)] == 0:
                             lege_plaatsen.add((new_x, new_y))
                             break
+    
     return lege_plaatsen
 
 def teken_zetten(speler):
@@ -230,6 +217,7 @@ def stukken_veranderen(speler, x, y):
                         break
                     else:    
                         geslagen_stukken.append((new_x, new_y))
+                
                         
                 elif lijst1[grid_lijst(new_x, new_y)] == speler:
                     
@@ -287,15 +275,13 @@ def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
     afbeelding.configure(image=foto)
 
 def muisKlik(ea):
-    global beurt_speler 
+    global beurt_speler
 
     teken_stuk(ea.x,ea.y,beurt_speler)
     t1 = threading.Thread(target=omliggende_check, args=(beurt_speler,))
     t1.start()
     t1.join()
     #omliggende_check(beurt_speler)
-    if zetten_tekenen:
-        teken_zetten(beurt_speler%2+1)
    
     if lijst1.count(1) == 0 or lijst1.count(1)+lijst1.count(2)==grid_size**2 and lijst1.count(2)>grid_size**2/2:
         popupmsg("rood wint")
@@ -306,14 +292,16 @@ def muisKlik(ea):
     print(f"aantal stenen {'blauw' if beurt_speler ==2 else 'rood'}",lijst1.count(beurt_speler%2+1))
     teken_score()
     
-    
-
-# een Label kan ook gebruikt worden om een PhotoImage te laten zien
+default = tk.StringVar(scherm)
+default.set("6x6")
+opties = ["4x4","6x6", "8x8", "10x10", "20x20", "30x30"]
+drop = tk.OptionMenu(scherm, default,*opties, command=lees_dropdown)
+drop.place(x=0, y=600)
 knop1 = Button(scherm, text="beurt overslaan", command=knop1_klik)
 knop1.place(x=650, y=30)
 knop2 = Button(scherm, text="hint", command=knop2_klik)
 knop2.place(x=650, y=60)
+
 speelveld_tekenen(grid_size)
 afbeelding.bind("<Button-1>", muisKlik)
 scherm.mainloop()
-
