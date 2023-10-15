@@ -46,7 +46,6 @@ def knop1_klik():
     global beurt_speler
     beurt_speler = beurt_speler%2+1
     teken_zetten(3)
-    teller[0] = 0
     teken_score()
 
 def knop2_klik():
