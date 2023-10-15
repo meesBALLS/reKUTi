@@ -24,38 +24,21 @@ scherm.pack()
 
 
 lijst1 = [(0)for i in range(0, grid_size**2)]
-
+teller = [0]
 def knop1_klik():
     global beurt_speler
     beurt_speler = beurt_speler%2+1
-    undraw_zetten()
+    teken_zetten(3)
+    teller[0] = 0
     teken_score()
 
-
 def knop2_klik():
-    global zetten_tekenen
     global beurt_speler
-    if not zetten_tekenen:
-        zetten_tekenen = True
+    teller[0] += 1
+    if teller[0]%2 == 1:
         teken_zetten(beurt_speler%2+1)
-    else:  
-        zetten_tekenen = False
-        undraw_zetten()
-
-
-# def text_score(speler):
-#     score = lijst1.count(speler)
-#     andere_score = lijst1.count(speler%2+1)
-#     score_text.set("rood" if speler == 1 else "blauw" 'score:', score \
-#     ,"blauw" if speler ==2 else "rood", andere_score)
-    
-
-# score_box = tk.Tk()
-# score_text = tk.StringVar()
-# score_text.set("blauw: 2, rood:2")
-
-# tekst_label = tk.Label(score_box, textvariable=score_text, width=50, height=15)
-# tekst_label.place(x=650, y=100)
+    else:
+        teken_zetten(3)
 
 def popupmsg(msg):
     popup = tk.Tk()
@@ -65,9 +48,6 @@ def popupmsg(msg):
     B1 = tk.Button(popup, text="Okay", command = popup.destroy)
     B1.pack()
     popup.mainloop()
-    
-
-
 
 def lees_dropdown(_):
     global grid_size, lijst1, offset, straal
@@ -205,7 +185,7 @@ def omliggende_check(speler):
                             break
     return lege_plaatsen
 
-def undraw_zetten():
+def teken_zetten(speler):
     if vorige_zetten != []:
         for i in vorige_zetten:
             a=i[0]
@@ -215,8 +195,6 @@ def undraw_zetten():
                 a += offset//2
                 b+= offset//2
                 draw.rectangle((a, b, a+straal, b+straal), fill="White")
-
-def teken_zetten(speler):
     for i in omliggende_check(speler):
         a,b = i
         vorige_zetten.append((a,b))
@@ -310,7 +288,7 @@ def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
 
 def muisKlik(ea):
     global beurt_speler 
-    undraw_zetten()
+
     teken_stuk(ea.x,ea.y,beurt_speler)
     t1 = threading.Thread(target=omliggende_check, args=(beurt_speler,))
     t1.start()
@@ -323,6 +301,7 @@ def muisKlik(ea):
         popupmsg("rood wint")
     elif lijst1.count(2) ==0 or lijst1.count(1)+lijst1.count(2)==grid_size**2:
         popupmsg("blauw wint")
+    teken_zetten(3)
     print(f"aantal stenen {'blauw' if beurt_speler ==1 else 'rood'}",lijst1.count(beurt_speler))
     print(f"aantal stenen {'blauw' if beurt_speler ==2 else 'rood'}",lijst1.count(beurt_speler%2+1))
     teken_score()
