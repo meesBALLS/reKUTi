@@ -293,7 +293,10 @@ def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
 
 def winner(speler):
     if (omliggende_check(speler) and omliggende_check(speler%2+1)) == set():
-        popupmsg("gelijkspel" if lijst1.count(1)==lijst1.count(2) else ("rood wint" if lijst1.count(1) <lijst1.count(2) else "blauw wint"))
+        teken_score()
+        popupmsg("gelijkspel" if lijst1.count(1)==lijst1.count(2) 
+                else ("rood wint" if lijst1.count(1) <lijst1.count(2) 
+                else "blauw wint"))
 
 def muisKlik(ea):
     global beurt_speler, zetten_tekenen
