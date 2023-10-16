@@ -15,6 +15,7 @@ straal = plaatje_size / grid_size - offset
 beurt_speler = 1
 vorige_zetten = []
 zetten_tekenen = False
+zetten_mogelijk = True
 
 scherm = Frame()
 scherm.master.title("reKUTi")
@@ -54,14 +55,14 @@ afbeelding.place(x=0, y=0)
 afbeelding.configure(width=plaatje_size, height=plaatje_size, bg="White")
 afbeelding.configure(bg="white")
 
-def knop1_klik():
+def beurd_knop_klik():
     global beurt_speler, zetten_tekenen
     beurt_speler = beurt_speler%2+1
     teken_zetten(3)
     teken_score()
     zetten_tekenen = False
 
-def knop2_klik():
+def hint_knop_klik():
     global beurt_speler, zetten_tekenen
     zetten_tekenen = not zetten_tekenen
     if zetten_tekenen:
@@ -172,7 +173,6 @@ def omliggende_check(speler):
     for i in range(0,grid_squared):
         if lijst1[i] == speler:
             x,y = lijst_grid(i)
-            
             for j in range(8):          
                 dx, dy = delta[j], delta[j+1]
                 if (x+dx and y+dy ) <= grid_size and (x+dx and y+dy) >= 0 and lijst1[(grid_lijst(x+dx,y+dy))] == andere_speler:
@@ -224,25 +224,20 @@ def stukken_veranderen(speler, x, y):
             for k in range(1,grid_size):
                 
                 new_x, new_y = x+k*dx, y+k*dy
-                if (new_x or new_y ) > grid_size or (new_x or new_y) <= 0 or lijst1[grid_lijst(new_x, new_y)] == 0:
+                if (new_x or new_y) > grid_size or (new_x or new_y) <1 or lijst1[grid_lijst(new_x, new_y)] == 0:
                     print("buiten kut")
-                    del geslagen_stukken[:-(k+1)]
                     break
                 elif lijst1[grid_lijst(new_x, new_y)] == andere_speler:
-                    if (x+(k+1)*dx or y+(k+1)*dy) > grid_size or (x+(k+1)*dx or y+(k+1)*dy) <= 0 and lijst1[grid_lijst(x+(k+1)*dx,y+(k+1)*dy)]!=0:
-                        del geslagen_stukken[:-k]
+                    if x+(k+1)*dx > grid_size or y+(k+1)*dy > grid_size or x+((k+1)*dx) <1 or y+((k+1)*dy) < 1 or lijst1[grid_lijst(x+((k+1)*dx),y+((k+1)*dy))]==0:
                         break
-                    else:    
+                    else:
                         geslagen_stukken.append((new_x, new_y))
-                
-                        
                 elif lijst1[grid_lijst(new_x, new_y)] == speler:
-                    
                     for i in geslagen_stukken:
                         teken_stuk(*grid_scherm(i[0],i[1]),speler = speler,computer = True, kut_recursie=False)
                         speler_lijst(*i,speler)
                     break
-               
+          
                 
 
 def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
@@ -292,11 +287,10 @@ def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
     afbeelding.configure(image=foto)
 
 def winner(speler):
-    if (omliggende_check(speler) and omliggende_check(speler%2+1)) == set():
+    if len(omliggende_check(speler)) == 0 and len(omliggende_check(speler%2+1)) == 0:
         teken_score()
         popupmsg("gelijkspel" if lijst1.count(1)==lijst1.count(2) 
-                else ("rood wint" if lijst1.count(1) <lijst1.count(2) 
-                else "blauw wint"))
+                else ("rood wint" if lijst1.count(1) <lijst1.count(2) else "blauw wint"))
 
 def muisKlik(ea):
     global beurt_speler, zetten_tekenen
@@ -307,6 +301,7 @@ def muisKlik(ea):
     t1.join()
     #omliggende_check(beurt_speler)
     zetten_tekenen = False
+    teken_zetten(3)
     winner(beurt_speler)
     teken_score()
     
@@ -315,10 +310,10 @@ default.set("6x6")
 opties = ["4x4","6x6", "8x8", "10x10", "20x20", "30x30"]
 drop = tk.OptionMenu(scherm, default,*opties, command=lees_dropdown)
 drop.place(x=0, y=600)
-knop1 = Button(scherm, text="beurt overslaan", command=knop1_klik)
-knop1.place(x=650, y=30)
-knop2 = Button(scherm, text="hint", command=knop2_klik)
-knop2.place(x=650, y=60)
+beurd_knop = Button(scherm, text="beurt overslaan", command=beurd_knop_klik)
+beurd_knop.place(x=650, y=30)
+hint_knop = Button(scherm, text="hint", command=hint_knop_klik)
+hint_knop.place(x=650, y=60)
 
 speelveld_tekenen(grid_size)
 afbeelding.bind("<Button-1>", muisKlik)
