@@ -43,10 +43,11 @@ afbeelding.configure(width=plaatje_size, height=plaatje_size, bg="White")
 afbeelding.configure(bg="white")
 
 def knop1_klik():
-    global beurt_speler
+    global beurt_speler, zetten_tekenen
     beurt_speler = beurt_speler%2+1
     teken_zetten(3)
     teken_score()
+    zetten_tekenen = False
 
 def knop2_klik():
     global beurt_speler, zetten_tekenen
@@ -274,14 +275,14 @@ def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
     afbeelding.configure(image=foto)
 
 def muisKlik(ea):
-    global beurt_speler
-
+    global beurt_speler, zetten_tekenen
+    
     teken_stuk(ea.x,ea.y,beurt_speler)
     t1 = threading.Thread(target=omliggende_check, args=(beurt_speler,))
     t1.start()
     t1.join()
     #omliggende_check(beurt_speler)
-   
+    zetten_tekenen = False
     if lijst1.count(1) == 0 or lijst1.count(1)+lijst1.count(2)==grid_size**2 and lijst1.count(2)>grid_size**2/2:
         popupmsg("rood wint")
     elif lijst1.count(2) ==0 or lijst1.count(1)+lijst1.count(2)==grid_size**2:
