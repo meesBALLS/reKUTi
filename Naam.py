@@ -18,22 +18,34 @@ zetten_tekenen = False
 
 scherm = Frame()
 scherm.master.title("reKUTi")
-scherm.configure(background="lightblue")
+scherm.configure(background=("#654321"))
+
 scherm.configure(width=scherm_size, height=scherm_size)
 scherm.pack()
 
 lijst1 = [(0)for i in range(0, grid_size**2)]
 
 canvas = tk.Canvas(scherm, width=200, height=20)
-canvas.place(x=650, y=100)
+canvas.place(x=700, y=100)
 
 blue_label = tk.Label(scherm, text="Blauw: 0", font=("Arial", 10))
-blue_label.place(x=650, y=120)
+blue_label.place(x=620, y=100)
 red_label = tk.Label(scherm, text="Rood: 0", font=("Arial", 10))
-red_label.place(x=750, y=120)
+red_label.place(x=930, y=100)
 
 turn_label = tk.Label(scherm, text="Rood is aan de beurt", font=("Arial", 10))
 turn_label.place(x=650, y=160)
+
+input_field = tk.Entry(scherm)
+input_field.place(x=650, y=200)
+  
+def bbc(event):
+    if input_field.get() == "bbc":
+        circle_image = Image.open("Big_Black_Cock.jpeg")
+        circle_image.show()
+
+input_field.bind("<Return>", bbc)
+
 
 plaatje = Image.new( mode="RGBA" , size=(plaatje_size,plaatje_size)) 
 draw = Draw(plaatje)
@@ -57,6 +69,8 @@ def knop2_klik():
     else:
         teken_zetten(3)
 
+
+
 def popupmsg(msg):
     popup = tk.Tk()
     popup.wm_title("!")
@@ -65,6 +79,8 @@ def popupmsg(msg):
     B1 = tk.Button(popup, text="Okay", command = popup.destroy)
     B1.pack()
     popup.mainloop()
+
+
 
 def lees_dropdown(_):
     global grid_size, lijst1, offset, straal
@@ -87,7 +103,8 @@ def grid_lijst(x,y):
 
 # returned de x en y coordinaten van de grid op de gegeven index
 def lijst_grid(i):
-    return (i%grid_size+1, i//grid_size+1)
+    return (
+        i%grid_size+1, i//grid_size+1)
 
 # veranderd de waarde van de lijst op de gegeven index naar de gegeven speler
 def speler_lijst(x, y, speler):
@@ -274,22 +291,20 @@ def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
     foto = ImageTk.PhotoImage(plaatje)
     afbeelding.configure(image=foto)
 
+def winner(speler):
+    if (omliggende_check(speler) and omliggende_check(speler%2+1)) == set():
+        popupmsg("gelijkspel" if lijst1.count(1)==lijst1.count(2) else ("rood wint" if lijst1.count(1) <lijst1.count(2) else "blauw wint"))
+
 def muisKlik(ea):
     global beurt_speler, zetten_tekenen
-    
+
     teken_stuk(ea.x,ea.y,beurt_speler)
     t1 = threading.Thread(target=omliggende_check, args=(beurt_speler,))
     t1.start()
     t1.join()
     #omliggende_check(beurt_speler)
     zetten_tekenen = False
-    if lijst1.count(1) == 0 or lijst1.count(1)+lijst1.count(2)==grid_size**2 and lijst1.count(2)>grid_size**2/2:
-        popupmsg("rood wint")
-    elif lijst1.count(2) ==0 or lijst1.count(1)+lijst1.count(2)==grid_size**2:
-        popupmsg("blauw wint")
-    teken_zetten(3)
-    print(f"aantal stenen {'blauw' if beurt_speler ==1 else 'rood'}",lijst1.count(beurt_speler))
-    print(f"aantal stenen {'blauw' if beurt_speler ==2 else 'rood'}",lijst1.count(beurt_speler%2+1))
+    winner(beurt_speler)
     teken_score()
     
 default = tk.StringVar(scherm)
