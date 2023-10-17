@@ -69,6 +69,7 @@ def hint_knop_klik():
         teken_zetten(beurt_speler%2+1)
     else:
         teken_zetten(3)
+    
 
 def popupmsg(msg):
     popup = tk.Tk()
@@ -129,10 +130,7 @@ def teken_score():
         red_percentage = lijst1.count(1) / total_stones
     except ZeroDivisionError:
         red_percentage = 0
-    # if total_stones == 0:
-    #     red_percentage = 0
-    # else:
-    #     red_percentage = lijst1.count(1) / total_stones
+    
 
     # draw the red and blue bars
     canvas.create_rectangle(0, 0, 200 * red_percentage, 20, fill="blue")
@@ -202,14 +200,17 @@ def teken_zetten(speler):
                 a += offset//2
                 b+= offset//2
                 draw.rectangle((a, b, a+straal, b+straal), fill="White")
-    for i in omliggende_check(speler):
-        a,b = i
-        vorige_zetten.append((a,b))
-        a,b = grid_scherm(a,b)
+    if omliggende_check(speler) == set() and speler!=3:
+        popupmsg("geen zetten mogelijk, druk op beurt overslaan")
+    else: 
+        for i in omliggende_check(speler):
+            a,b = i
+            vorige_zetten.append((a,b))
+            a,b = grid_scherm(a,b)
 
-        a += offset*4
-        b += offset*4
-        draw.ellipse(((a,b),(a+straal/5,b+straal/5)),outline="Grey", width=5)
+            a += offset*4
+            b += offset*4
+            draw.ellipse(((a,b),(a+straal/5,b+straal/5)),outline="Grey", width=5)
     
     global foto
     foto = ImageTk.PhotoImage(plaatje)
