@@ -34,14 +34,14 @@ blue_label.place(x=620, y=100)
 red_label = tk.Label(scherm, text="Rood: 0", font=("Arial", 10))
 red_label.place(x=930, y=100)
 
-turn_label = tk.Label(scherm, text="Rood is aan de beurt", font=("Arial", 10))
+turn_label = tk.Label(scherm, text="Rood is aan de beurt", font=("Arial", 10), fg="red")
 turn_label.place(x=650, y=160)
 
 input_field = tk.Entry(scherm)
 input_field.place(x=650, y=200)
   
 def bbc(event):
-    if input_field.get() == "bbc":
+    if input_field.get().lower() == "bbc":
         circle_image = Image.open("Big_Black_Cock.jpeg")
         circle_image.show()
 
@@ -70,8 +70,6 @@ def hint_knop_klik():
     else:
         teken_zetten(3)
 
-
-
 def popupmsg(msg):
     popup = tk.Tk()
     popup.wm_title("!")
@@ -80,8 +78,6 @@ def popupmsg(msg):
     B1 = tk.Button(popup, text="Okay", command = popup.destroy)
     B1.pack()
     popup.mainloop()
-
-
 
 def lees_dropdown(_):
     global grid_size, lijst1, offset, straal
@@ -129,10 +125,14 @@ def snap_plaats(x,y):
 def teken_score():
     # calculate the percentage of stones for each player
     total_stones = lijst1.count(1) + lijst1.count(2)
-    if total_stones == 0:
-        red_percentage = 0
-    else:
+    try :
         red_percentage = lijst1.count(1) / total_stones
+    except ZeroDivisionError:
+        red_percentage = 0
+    # if total_stones == 0:
+    #     red_percentage = 0
+    # else:
+    #     red_percentage = lijst1.count(1) / total_stones
 
     # draw the red and blue bars
     canvas.create_rectangle(0, 0, 200 * red_percentage, 20, fill="blue")
@@ -140,6 +140,9 @@ def teken_score():
     blue_label.config(text=f"Blauw: {lijst1.count(1)}")
     red_label.config(text=f"Rood: {lijst1.count(2)}")
     turn_label.config(text="Rood is aan de beurt" if beurt_speler == 2 else "Blauw is aan de beurt")
+    turn_label.config(fg="red" if beurt_speler == 2 else "blue")
+    # scherm.configure(background="red" if beurt_speler == 2 else "blue")
+
 
 
 
@@ -153,7 +156,7 @@ def speelveld_tekenen(veld_grootte):
     
     begin_stukken(veld_grootte)
     teken_score()
-    # teken_zetten(beurt_speler%2+1)
+
 
 def begin_stukken(veld_grootte):
     center = plaatje_size / 2
@@ -236,9 +239,7 @@ def stukken_veranderen(speler, x, y):
                     for i in geslagen_stukken:
                         teken_stuk(*grid_scherm(i[0],i[1]),speler = speler,computer = True, kut_recursie=False)
                         speler_lijst(*i,speler)
-                    break
-          
-                
+                    break         
 
 def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
     global beurt_speler
@@ -246,13 +247,11 @@ def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
     x,y = snap_plaats(x,y)
     grid_x, grid_y = scherm_grid(x,y)
 
-    #
     x += offset//2
     y += offset//2  
     
     # checkt of de grid positie al bezet is
     if lijst1[grid_lijst(grid_x,grid_y)] != 0 and computer is not True:
-        #print("niet mogelijk om hier te plaatsen")
         return
 
     if (grid_x,grid_y) not in [opties for opties in omliggende_check((speler%2+1))] and computer is False:
@@ -262,24 +261,11 @@ def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
         stukken_veranderen(beurt_speler, grid_x, grid_y)
     speler_lijst(grid_x,grid_y,speler)
     
-    
-
-    # speler logica
     if speler == 1:
-        #circle_image = Image.open("Screenshot 1 v2.png")
-        #circle_image = circle_image.resize((int(straal), int(straal)))
-        #draw.bitmap((x, y), circle_image.convert('RGB'))
-        
         draw.ellipse(((x,y),(x+straal,y+straal)),fill="Blue")
-        
         beurt_speler = 2
     elif speler == 2:
-        #circle_image = Image.open("Screenshot1.png")
-        #circle_image = circle_image.resize((int(straal), int(straal)))
-        #draw.bitmap((x, y), circle_image.convert('RGB'))
-        
         draw.ellipse(((x,y),(x+straal,y+straal)),fill="Red")
-        
         beurt_speler = 1
         
     global foto
@@ -299,7 +285,6 @@ def muisKlik(ea):
     t1 = threading.Thread(target=omliggende_check, args=(beurt_speler,))
     t1.start()
     t1.join()
-    #omliggende_check(beurt_speler)
     zetten_tekenen = False
     teken_zetten(3)
     winner(beurt_speler)
