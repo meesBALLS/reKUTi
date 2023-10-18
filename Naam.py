@@ -294,7 +294,7 @@ def bot_zet():
         return
 
     else:
-        muisKlik(type("Event", (), {"x": grid_scherm(x,y)[0], "y": grid_scherm(x,y)[1]}))
+        speel_een_beurt(grid_scherm(x,y)[0], grid_scherm(x,y)[1])
 
 def bvb_thread():
     global beurt_speler
@@ -323,17 +323,19 @@ def bvb_klik():
 def bot_klik():
     bot_zet()
     
-def muisKlik(ea):
+def speel_een_beurt(x,y):
     global beurt_speler, zetten_tekenen
     # omdat python sloom is gebruiken we multithreading
     t1 = threading.Thread(target=omliggende_check, args=(beurt_speler)) 
     t1.start()
-    teken_stuk(ea.x,ea.y,beurt_speler)
+    teken_stuk(x,y,beurt_speler)
     zetten_tekenen = False # zorgt dat je niet 2 keer op hint moet klikken
     teken_zetten(3) # haalt de hints weg
     winner(beurt_speler) # checkt of er een winnaar is
     teken_score() # tekend de score
-    t1.join()
+    
+def muisKlik(ea):
+    speel_een_beurt(ea.x,ea.y)
     
 default = tk.StringVar(scherm)
 # de default waarde van het speelveld en de opties voor de grootte van het speelveld
