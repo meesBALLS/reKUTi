@@ -18,6 +18,7 @@ beurt_speler = 1
 vorige_zetten = []
 zetten_tekenen = False
 zetten_mogelijk = True
+bots_aan = False
 
 scherm = Frame()
 scherm.master.title("reKUTi")
@@ -159,8 +160,8 @@ def omliggende_check(speler):
     speler = (speler)%2 +1
     
     delta = [-1, 0, 1, 0, -1, -1, 1, 1, -1] # 8 richtingen
-    grid_squablack = grid_size**2
-    for i in range(0,grid_squablack):
+    grid_squared = grid_size**2
+    for i in range(0,grid_squared):
         if lijst1[i] == speler:
             x,y = lijst_grid(i)
             for j in range(8):          
@@ -169,7 +170,6 @@ def omliggende_check(speler):
                     for k in range(1,grid_size):
                         new_x, new_y = x+k*dx, y+k*dy
                         if (new_x or new_y ) > grid_size or (new_x or new_y) < 0:
-                            print("buiten kut")
                             break
                         elif lijst1[grid_lijst(new_x, new_y)] == speler:
                             break
@@ -263,32 +263,56 @@ def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
 def winner(speler):
     if len(omliggende_check(speler)) == 0 and len(omliggende_check(speler%2+1)) == 0:
         teken_score()
+        if lijst1.count(1) <lijst1.count(2):
+            circle_image = Image.open("Big_Black_Cock.jpeg")
+            circle_image.show()
         popupmsg("gelijkspel" if lijst1.count(1)==lijst1.count(2) 
                 else ("zwart wint" if lijst1.count(1) <lijst1.count(2) else "wit wint"))
 
 def bot_zet():
     global beurt_speler
     legal_positions = omliggende_check(beurt_speler%2+1)
+    print(legal_positions)
     if len(legal_positions) == 0:
         beurt_speler = beurt_speler%2+1
         return
+    
     x, y = random.choice(list(legal_positions))
     print(x,y)
-    if x < grid_size or y < grid_size or (x or y) >= 1 and lijst1[grid_lijst(x,y)] == 0:
+    if x>grid_size or y>grid_size or x<1 or y<1:
+        print("kut")
+        beurt_speler = beurt_speler%2+1
+        return
+ 
+    print(x,y)
+    if 0< x <= grid_size and 0< y <= grid_size:
+        
         muisKlik(type("Event", (), {"x": grid_scherm(x,y)[0], "y": grid_scherm(x,y)[1]}))  
 
 def bvb_thread():
     global beurt_speler
-    while True:
+    while bots_aan:
         bot_zet()
+        
         if len(omliggende_check(beurt_speler%2+1)) == 0:
             beurt_speler = beurt_speler%2+1
             bot_zet()
+
         time.sleep(0.2)
+    
         
 def bvb_klik():
-    t1 = threading.Thread(target=bvb_thread)
-    t1.start()
+    global bots_aan
+    botvsbot_knop.config(text="stop")
+
+    if not bots_aan:
+        bots_aan = True
+        t1 = threading.Thread(target=bvb_thread)
+        t1.start()
+    else:
+        
+        bots_aan = False
+        botvsbot_knop.config(text="bot vs bot")
 
 def bot_klik():
     bot_zet()
@@ -302,7 +326,7 @@ def muisKlik(ea):
     teken_zetten(3)
     winner(beurt_speler)
     teken_score()
-    #t1.join()
+    t1.join()
     
 default = tk.StringVar(scherm)
 default.set("6x6")
