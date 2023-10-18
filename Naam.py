@@ -151,16 +151,18 @@ def begin_stukken(veld_grootte):
     teken_stuk(center-plaatje_size/veld_grootte, center-plaatje_size/veld_grootte, 1, True)
 
 def omliggende_check(speler):
+    # we gebruiken een set ipv een lijst omdat we geen dubbele waardes willen en sets sneller zijn dan lijsten
+    # ook zijn er geen arrays in python :( https://i.pinimg.com/originals/90/04/68/90046863e1a4b223f13573e747199de3.gif
     lege_plaatsen = set()    
     andere_speler = speler
     speler = (speler)%2 +1
     
     delta = [-1, 0, 1, 0, -1, -1, 1, 1, -1] # de 8 richtingen lees als (-1,0) (0,1) (1,0) ect.
     grid_squared = grid_size**2
-    for i in range(0,grid_squared): 
+    for i in range(0,grid_squared):
         if lijst1[i] == speler:
             x,y = lijst_grid(i)
-            for j in range(8):          
+            for j in range(8): # per richting vanaf de gezette steen kijken we welke stukken er geslagen worden         
                 dx, dy = delta[j], delta[j+1]
                 # we kijken voor alle stenen van de huidige speler of er een steen van de andere speler om heen ligt
                 if (x+dx and y+dy ) <= grid_size and (x+dx and y+dy) >= 0 and lijst1[(grid_lijst(x+dx,y+dy))] == andere_speler:
@@ -209,7 +211,7 @@ def teken_zetten(speler):
 
 def stukken_veranderen(speler, x, y):
     andere_speler = speler % 2 + 1
-    delta = [-1, 0, 1, 0, -1, -1, 1, 1, -1] # 8 richtingen worden het zelfde gelezen als bij omliggende_check
+    delta = [-1, 0, 1, 0, -1, -1, 1, 1, -1] # 8 richtingen wordt hetzelfde gelezen als bij omliggende_check
     for j in range(8): # per richting vanaf de gezette steen kijken we welke stukken er geslagen worden
         dx, dy = delta[j], delta[j+1]
         geslagen_stukken = []  # de stukken die geslagen worden die we kunnen doorgeven aan de fuctie die de stukken tekent
