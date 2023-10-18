@@ -118,7 +118,8 @@ def teken_score():
         black_percentage = lijst1.count(1) / total_stones
     except ZeroDivisionError:
         black_percentage = 0
-    
+        # we hadden ook wit op 0 kunnen zetten, maar dan zou de balk niet meer zichtbaar zijn 
+    # de huidige status van de game weergeven
     canvas.create_rectangle(0, 0, 200 * black_percentage, 20, fill="white")
     canvas.create_rectangle(200 * black_percentage, 0, 200, 20, fill="black")
     white_label.config(text=f"wit: {lijst1.count(1)}")
@@ -132,7 +133,7 @@ def speelveld_tekenen(veld_grootte):
     for i in range(1,veld_grootte):
         draw.line(((lijn_pos*i,0),(lijn_pos*i,plaatje_size)),fill="black")
         draw.line(((0,lijn_pos*i),(plaatje_size,lijn_pos*i)),fill="black")
-    
+    #omdat we een heel nieuw plaatje tekenen moeten ook de stenen opnieuw getekend worden en de score ge reset
     begin_stukken(veld_grootte)
     teken_score()
 
@@ -149,9 +150,9 @@ def omliggende_check(speler):
     andere_speler = speler
     speler = (speler)%2 +1
     
-    delta = [-1, 0, 1, 0, -1, -1, 1, 1, -1] # 8 richtingen
+    delta = [-1, 0, 1, 0, -1, -1, 1, 1, -1] # de 8 richtingen lees als (-1,0) (0,1) (1,0) ect.
     grid_squared = grid_size**2
-    for i in range(0,grid_squared):
+    for i in range(0,grid_squared): # we kijken voor alle stenen van de huidige speler of er een steen van de andere speler om heen ligt
         if lijst1[i] == speler:
             x,y = lijst_grid(i)
             for j in range(8):          
@@ -164,12 +165,14 @@ def omliggende_check(speler):
                         elif lijst1[grid_lijst(new_x, new_y)] == speler:
                             break
                         elif lijst1[grid_lijst(new_x, new_y)] == 0:
+                            # als er een sequentie is van speler, x maal andere speler, leeg vakje, 
+                            # dan is dat een legale move, gegeven dat die in het speelveld valt
                             lege_plaatsen.add((new_x, new_y))
-                            break
-    
+                            break 
     return lege_plaatsen
 
 def teken_zetten(speler):
+    #verwijderd de oude hints 
     if vorige_zetten != []:
         for i in vorige_zetten:
             a=i[0]
@@ -179,8 +182,11 @@ def teken_zetten(speler):
                 a += offset//2
                 b+= offset//2
                 draw.rectangle((a, b, a+straal, b+straal), fill="green")
+    # als er geen legale moves zijn, geeft hij een popup
+    # we gebruiken speler 3 want die bestaat niet, en dus worden er geen zetten getekend en de oude hints verwijderd
     if omliggende_check(speler) == set() and speler!=3:
         popupmsg("geen zetten mogelijk, druk op beurt overslaan")
+    # als er legale moves zijn, dan tekend deze fucntie die als hints worden weergegeven
     else: 
         for i in omliggende_check(speler):
             a,b = i
@@ -197,29 +203,34 @@ def teken_zetten(speler):
 
 def stukken_veranderen(speler, x, y):
     andere_speler = speler % 2 + 1
-    delta = [-1, 0, 1, 0, -1, -1, 1, 1, -1] # 8 richtingen
-    for j in range(8):
+    delta = [-1, 0, 1, 0, -1, -1, 1, 1, -1] # 8 richtingen worden het zelfde gelezen als bij omliggende_check
+    for j in range(8): # per richting vanaf de gezette steen kijken we welke stukken er geslagen worden
         dx, dy = delta[j], delta[j+1]
-        geslagen_stukken = []
+        geslagen_stukken = []  # de stukken die geslagen worden die we kunnen doorgeven aan de fuctie die de stukken tekend
         if (x+dx and y+dy ) <= grid_size and (x+dx and y+dy) > 0 and lijst1[(grid_lijst(x+dx,y+dy))] == andere_speler:
             for k in range(1,grid_size):
-                
-                new_x, new_y = x+k*dx, y+k*dy
+                new_x, new_y = x+k*dx, y+k*dy # dan hoeven we ze niet voor elke voorwaarde opnieuw te berekenen
                 if (new_x or new_y) > grid_size or (new_x or new_y) <1 or lijst1[grid_lijst(new_x, new_y)] == 0:
                     print("buiten kut")
                     break
-                elif lijst1[grid_lijst(new_x, new_y)] == andere_speler:
+                elif lijst1[grid_lijst(new_x, new_y)] == andere_speler: 
+                    #de stenen van de andere kleur die in een richting tegen de gezette steen aanliggen worden ondhouden 
+                    # mist de volgende stap in die richting binnen het speelveld valt, anders kijken we naar de volgende richting
                     if x+(k+1)*dx > grid_size or y+(k+1)*dy > grid_size or x+((k+1)*dx) <1 or y+((k+1)*dy) < 1 or lijst1[grid_lijst(x+((k+1)*dx),y+((k+1)*dy))]==0:
-                        break
+                        break 
                     else:
                         geslagen_stukken.append((new_x, new_y))
                 elif lijst1[grid_lijst(new_x, new_y)] == speler:
+                    #als de steen andere stenen insluit met een steen van de speler
+                    # dan worden die stenen verandert naar de stenen van de speler en gaan we door naar de volgende richting
                     for i in geslagen_stukken:
                         teken_stuk(*grid_scherm(i[0],i[1]),speler = speler,computer = True, kut_recursie=False)
                         speler_lijst(*i,speler)
-                    break         
+                    break     
 
 def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
+    # tekend de stenen, als computer = True dan kunnen er "illegale" zetten worden gemaakt om bijv. 
+    # de stenen te slaan of de begin stenen te plaatsen
     global beurt_speler
     
     x,y = snap_plaats(x,y)
@@ -229,7 +240,7 @@ def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
     y += offset//2  
     
     # checkt of de grid positie al bezet is
-    if lijst1[grid_lijst(grid_x,grid_y)] != 0 and computer is not True:
+    if lijst1[grid_lijst(grid_x,grid_y)] != 0 and computer is False:
         return
 
     if (grid_x,grid_y) not in [opties for opties in omliggende_check((speler%2+1))] and computer is False:
@@ -238,7 +249,7 @@ def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
     if kut_recursie:
         stukken_veranderen(beurt_speler, grid_x, grid_y)
     speler_lijst(grid_x,grid_y,speler)
-    
+    # we hebben hier bepaald dat speler 1 = wit en speler 2 = zwart en deze worden hier getekend
     if speler == 1:
         draw.ellipse(((x,y),(x+straal,y+straal)),fill="White")
         beurt_speler = 2
@@ -252,19 +263,20 @@ def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
 
 def winner(speler):
     global bots_aan, turn_label
+    # als er geen legale zetten zijn voor beide spelers dan is het spel afgelopen
     if len(omliggende_check(speler)) == 0 and len(omliggende_check(speler%2+1)) == 0:
         teken_score()
         bots_aan = False
-        if lijst1.count(1) < lijst1.count(2):
+        if lijst1.count(1) < lijst1.count(2): #als zwart meer stenen heeft dan wint zwart
             circle_image = Image.open("Big_Black_Cock.jpeg")
             circle_image.show()
-        elif lijst1.count(2) < lijst1.count(1):
+        elif lijst1.count(2) < lijst1.count(1): #als wit meer stenen heeft wint wit
             circle_image = Image.open("bwc.jpg")
             circle_image.show()
-        else: 
+        else: # anders is het gelijk spel
             circle_image = Image.open("Screenshot1.png")
             circle_image.show()
-            
+        #de popup die aangeeft wie wint met list comprihansion 
         popupmsg("gelijkspel" if lijst1.count(1)==lijst1.count(2) else ("zwart wint" if lijst1.count(1) <lijst1.count(2) else "wit wint"))
 
 def bot_zet():
@@ -313,20 +325,23 @@ def bot_klik():
     
 def muisKlik(ea):
     global beurt_speler, zetten_tekenen
-    t1 = threading.Thread(target=omliggende_check, args=(beurt_speler))
+    # omdat python sloom is gebruiken we multithreading
+    t1 = threading.Thread(target=omliggende_check, args=(beurt_speler)) 
     t1.start()
     teken_stuk(ea.x,ea.y,beurt_speler)
-    zetten_tekenen = False
-    teken_zetten(3)
-    winner(beurt_speler)
-    teken_score()
+    zetten_tekenen = False # zorgt dat je niet 2 keer op hint moet klikken
+    teken_zetten(3) # haalt de hints weg
+    winner(beurt_speler) # checkt of er een winnaar is
+    teken_score() # tekend de score
     t1.join()
     
 default = tk.StringVar(scherm)
+# de default waarde van het speelveld en de opties voor de grootte van het speelveld
 default.set("6x6")
 opties = ["4x4","6x6", "8x8", "10x10", "20x20", "30x30"]
 drop = tk.OptionMenu(scherm, default,*opties)
 drop.place(x=0, y=620)
+# alle knoppen
 beurt_knop = Button(scherm, text="beurt overslaan", command=beurt_knop_klik)
 beurt_knop.place(x=650, y=30)
 bot_knop = Button(scherm, text="bot", command=bot_klik)
