@@ -1,1 +1,0 @@
-  total_stones = lijst1.count(1) + lijst1.count(2)
