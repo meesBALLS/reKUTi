@@ -40,16 +40,6 @@ black_label.place(x=930, y=100)
 turn_label = tk.Label(scherm, text="zwart is aan de beurt", font=("Arial", 10), fg="black")
 turn_label.place(x=650, y=160)
 
-input_field = tk.Entry(scherm)
-input_field.place(x=650, y=200, width=167)
-  
-def bbc(event):
-    if input_field.get().lower() == "bbc":
-        circle_image = Image.open("Big_Black_Cock.jpeg")
-        circle_image.show()
-
-input_field.bind("<Return>", bbc)
-
 plaatje = Image.new( mode="RGBA" , size=(plaatje_size,plaatje_size)) 
 draw = Draw(plaatje)
 afbeelding = Label(scherm) 
@@ -261,19 +251,26 @@ def teken_stuk(x,y,speler, computer=False, kut_recursie=True):
     afbeelding.configure(image=foto)
 
 def winner(speler):
+    global bots_aan, turn_label
     if len(omliggende_check(speler)) == 0 and len(omliggende_check(speler%2+1)) == 0:
         teken_score()
-        if lijst1.count(1) <lijst1.count(2):
+        bots_aan = False
+        if lijst1.count(1) < lijst1.count(2):
             circle_image = Image.open("Big_Black_Cock.jpeg")
             circle_image.show()
-        popupmsg("gelijkspel" if lijst1.count(1)==lijst1.count(2) 
-                else ("zwart wint" if lijst1.count(1) <lijst1.count(2) else "wit wint"))
+        elif lijst1.count(2) < lijst1.count(1):
+            circle_image = Image.open("bwc.jpg")
+            circle_image.show()
+        else: 
+            circle_image = Image.open("Screenshot1.png")
+            circle_image.show()
+            
+        popupmsg("gelijkspel" if lijst1.count(1)==lijst1.count(2) else ("zwart wint" if lijst1.count(1) <lijst1.count(2) else "wit wint"))
 
 def bot_zet():
     global beurt_speler
     legal_positions = omliggende_check(beurt_speler%2+1)
-    print(legal_positions)
-    if len(legal_positions) == 0:
+    if len(legal_positions) == 0 :
         beurt_speler = beurt_speler%2+1
         return
     
@@ -283,17 +280,15 @@ def bot_zet():
         print("kut")
         beurt_speler = beurt_speler%2+1
         return
- 
-    print(x,y)
-    if 0< x <= grid_size and 0< y <= grid_size:
-        
-        muisKlik(type("Event", (), {"x": grid_scherm(x,y)[0], "y": grid_scherm(x,y)[1]}))  
+
+    else:
+        muisKlik(type("Event", (), {"x": grid_scherm(x,y)[0], "y": grid_scherm(x,y)[1]}))
 
 def bvb_thread():
     global beurt_speler
     while bots_aan:
         bot_zet()
-        
+
         if len(omliggende_check(beurt_speler%2+1)) == 0:
             beurt_speler = beurt_speler%2+1
             bot_zet()
@@ -310,7 +305,6 @@ def bvb_klik():
         t1 = threading.Thread(target=bvb_thread)
         t1.start()
     else:
-        
         bots_aan = False
         botvsbot_knop.config(text="bot vs bot")
 
@@ -319,7 +313,7 @@ def bot_klik():
     
 def muisKlik(ea):
     global beurt_speler, zetten_tekenen
-    t1 = threading.Thread(target=omliggende_check, args=(beurt_speler,))
+    t1 = threading.Thread(target=omliggende_check, args=(beurt_speler))
     t1.start()
     teken_stuk(ea.x,ea.y,beurt_speler)
     zetten_tekenen = False
